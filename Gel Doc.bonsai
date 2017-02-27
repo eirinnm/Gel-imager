@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <WorkflowBuilder Version="2.3.0">
-  <Workflow xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:q1="clr-namespace:Bonsai.PointGrey;assembly=Bonsai.PointGrey" xmlns:q2="clr-namespace:Bonsai.Vision;assembly=Bonsai.Vision" xmlns:q3="clr-namespace:Bonsai.Scripting;assembly=Bonsai.Scripting" xmlns:q4="clr-namespace:Bonsai.Windows.Input;assembly=Bonsai.Windows.Input" xmlns:q5="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp" xmlns:q6="clr-namespace:Bonsai.Audio;assembly=Bonsai.Audio" xmlns="https://horizongir.org/bonsai">
+  <Workflow xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:q1="clr-namespace:Bonsai.PointGrey;assembly=Bonsai.PointGrey" xmlns:q2="clr-namespace:Bonsai.Vision;assembly=Bonsai.Vision" xmlns:q3="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp" xmlns:q4="clr-namespace:Bonsai.Scripting;assembly=Bonsai.Scripting" xmlns:q5="clr-namespace:Bonsai.Audio;assembly=Bonsai.Audio" xmlns:q6="clr-namespace:Bonsai.Windows.Input;assembly=Bonsai.Windows.Input" xmlns="https://horizongir.org/bonsai">
     <Nodes>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="q1:FlyCapture">
@@ -12,160 +12,91 @@
         <Selector>Source.Image</Selector>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="q2:Grayscale" />
+        <Combinator xsi:type="q2:Crop">
+          <q2:RegionOfInterest>
+            <q2:X>435</q2:X>
+            <q2:Y>435</q2:Y>
+            <q2:Width>1200</q2:Width>
+            <q2:Height>1200</q2:Height>
+          </q2:RegionOfInterest>
+        </Combinator>
       </Expression>
       <Expression xsi:type="NestedWorkflow">
-        <Name>Up/down: control exposure</Name>
         <Workflow>
           <Nodes>
-            <Expression xsi:type="Scan">
+            <Expression xsi:type="PublishSubject">
+              <Name>Image Preview</Name>
+            </Expression>
+            <Expression xsi:type="NestedWorkflow">
+              <Name>Calculate FPS</Name>
               <Workflow>
                 <Nodes>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="q3:Average" />
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="q3:Buffer">
+                      <q3:Count>50</q3:Count>
+                      <q3:Skip>1</q3:Skip>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="q4:ExpressionTransform">
+                    <q4:Expression>1000/it</q4:Expression>
+                  </Expression>
+                  <Expression xsi:type="MemberSelector">
+                    <Selector>Source.Interval.TotalMilliseconds</Selector>
+                  </Expression>
                   <Expression xsi:type="WorkflowInput">
                     <Name>Source1</Name>
                   </Expression>
                   <Expression xsi:type="WorkflowOutput" />
-                  <Expression xsi:type="MemberSelector">
-                    <Selector>Source.Accumulation</Selector>
-                  </Expression>
-                  <Expression xsi:type="MemberSelector">
-                    <Selector>Source.Value</Selector>
-                  </Expression>
-                  <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="Zip" />
-                  </Expression>
-                  <Expression xsi:type="Add" />
-                  <Expression xsi:type="q3:PythonTransform">
-                    <q3:Script>@returns(int)
-def process(value):
-  return 1 if value&lt;=0 else value</q3:Script>
-                  </Expression>
                 </Nodes>
                 <Edges>
                   <Edge>
                     <From>0</From>
-                    <To>2</To>
-                    <Label>Source1</Label>
-                  </Edge>
-                  <Edge>
-                    <From>0</From>
-                    <To>3</To>
-                    <Label>Source1</Label>
-                  </Edge>
-                  <Edge>
-                    <From>2</From>
-                    <To>4</To>
-                    <Label>Source1</Label>
-                  </Edge>
-                  <Edge>
-                    <From>3</From>
-                    <To>4</To>
-                    <Label>Source2</Label>
-                  </Edge>
-                  <Edge>
-                    <From>4</From>
                     <To>5</To>
                     <Label>Source1</Label>
                   </Edge>
                   <Edge>
-                    <From>5</From>
-                    <To>6</To>
+                    <From>1</From>
+                    <To>0</To>
                     <Label>Source1</Label>
                   </Edge>
                   <Edge>
-                    <From>6</From>
+                    <From>2</From>
                     <To>1</To>
+                    <Label>Source1</Label>
+                  </Edge>
+                  <Edge>
+                    <From>3</From>
+                    <To>2</To>
+                    <Label>Source1</Label>
+                  </Edge>
+                  <Edge>
+                    <From>4</From>
+                    <To>3</To>
                     <Label>Source1</Label>
                   </Edge>
                 </Edges>
               </Workflow>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="Merge" />
-            </Expression>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="IntProperty">
-                <Value>1</Value>
+              <Combinator xsi:type="q2:SaveImage">
+                <q2:FileName>C:\Users\Gel imager\Pictures\Camera Roll\Gel image .jpg</q2:FileName>
+                <q2:Suffix>Timestamp</q2:Suffix>
               </Combinator>
             </Expression>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="IntProperty">
-                <Value>-1</Value>
-              </Combinator>
+            <Expression xsi:type="ReplaySubject">
+              <Name>FramesToSum</Name>
+              <BufferSize>1</BufferSize>
             </Expression>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="Take">
-                <Count>1</Count>
-              </Combinator>
-            </Expression>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q4:KeyDown">
-                <q4:Filter>Up</q4:Filter>
-              </Combinator>
-            </Expression>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q4:KeyDown">
-                <q4:Filter>Down</q4:Filter>
-              </Combinator>
-            </Expression>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="IntProperty">
-                <Value>1</Value>
-              </Combinator>
-            </Expression>
-            <Expression xsi:type="WorkflowOutput" />
-          </Nodes>
-          <Edges>
-            <Edge>
-              <From>0</From>
-              <To>8</To>
-              <Label>Source1</Label>
-            </Edge>
-            <Edge>
-              <From>1</From>
-              <To>0</To>
-              <Label>Source1</Label>
-            </Edge>
-            <Edge>
-              <From>2</From>
-              <To>1</To>
-              <Label>Source1</Label>
-            </Edge>
-            <Edge>
-              <From>3</From>
-              <To>1</To>
-              <Label>Source2</Label>
-            </Edge>
-            <Edge>
-              <From>4</From>
-              <To>1</To>
-              <Label>Source3</Label>
-            </Edge>
-            <Edge>
-              <From>5</From>
-              <To>2</To>
-              <Label>Source1</Label>
-            </Edge>
-            <Edge>
-              <From>6</From>
-              <To>3</To>
-              <Label>Source1</Label>
-            </Edge>
-            <Edge>
-              <From>7</From>
-              <To>4</To>
-              <Label>Source1</Label>
-            </Edge>
-          </Edges>
-        </Workflow>
-      </Expression>
-      <Expression xsi:type="NestedWorkflow">
-        <Name>Collect frames</Name>
-        <Workflow>
-          <Nodes>
-            <Expression xsi:type="q3:PythonTransform">
-              <q3:Name>Draw text</q3:Name>
-              <q3:Script>import clr
+            <Expression xsi:type="NestedWorkflow">
+              <Name>Collect frames</Name>
+              <Workflow>
+                <Nodes>
+                  <Expression xsi:type="q4:PythonTransform">
+                    <q4:Name>Draw text</q4:Name>
+                    <q4:Script>import clr
 clr.AddReference("OpenCV.Net")
 from OpenCV.Net import *
 import datetime
@@ -177,32 +108,20 @@ font=Font(2)
 def process(value):
   image = value.Item1
   numframes = value.Item2
+  exptime = numframes * 0.1
   text = datetime.datetime.now().strftime("%x %X")
-  text = text + " exposure = " + str(numframes)
+  text = text + " exposure = %0.2f s" % exptime
   output = IplImage(image.Size, image.Depth, 3)
   CV.CvtColor(image, output, ColorConversion.Gray2Bgr)
   CV.PutText(output,text,Point(15,30),font, textcol)
   return output
-</q3:Script>
-            </Expression>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="CombineLatest" />
-            </Expression>
-            <Expression xsi:type="SelectMany">
-              <Name>Process Frames</Name>
-              <Workflow>
-                <Nodes>
-                  <Expression xsi:type="WorkflowInput">
-                    <Name>Source1</Name>
+</q4:Script>
                   </Expression>
-                  <Expression xsi:type="WorkflowOutput" />
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="ElementCountWindow">
-                      <Count>1</Count>
-                      <Skip xsi:nil="true" />
-                    </Combinator>
+                    <Combinator xsi:type="CombineLatest" />
                   </Expression>
                   <Expression xsi:type="SelectMany">
+                    <Name>Process Frames</Name>
                     <Workflow>
                       <Nodes>
                         <Expression xsi:type="WorkflowInput">
@@ -210,18 +129,181 @@ def process(value):
                         </Expression>
                         <Expression xsi:type="WorkflowOutput" />
                         <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="q5:Accumulate" />
-                        </Expression>
-                        <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="TakeLast">
-                            <Count>1</Count>
+                          <Combinator xsi:type="ElementCountWindow">
+                            <Count>19</Count>
+                            <Skip xsi:nil="true" />
                           </Combinator>
+                        </Expression>
+                        <Expression xsi:type="SelectMany">
+                          <Workflow>
+                            <Nodes>
+                              <Expression xsi:type="WorkflowInput">
+                                <Name>Source1</Name>
+                              </Expression>
+                              <Expression xsi:type="WorkflowOutput" />
+                              <Expression xsi:type="Combinator">
+                                <Combinator xsi:type="q3:Accumulate" />
+                              </Expression>
+                              <Expression xsi:type="Combinator">
+                                <Combinator xsi:type="TakeLast">
+                                  <Count>1</Count>
+                                </Combinator>
+                              </Expression>
+                            </Nodes>
+                            <Edges>
+                              <Edge>
+                                <From>0</From>
+                                <To>2</To>
+                                <Label>Source1</Label>
+                              </Edge>
+                              <Edge>
+                                <From>2</From>
+                                <To>3</To>
+                                <Label>Source1</Label>
+                              </Edge>
+                              <Edge>
+                                <From>3</From>
+                                <To>1</To>
+                                <Label>Source1</Label>
+                              </Edge>
+                            </Edges>
+                          </Workflow>
+                        </Expression>
+                        <Expression xsi:type="ExternalizedPropertyOfInt32ElementCountWindow">
+                          <MemberName>Count</MemberName>
+                          <Name>Sum Frames</Name>
+                          <Value>2</Value>
+                        </Expression>
+                        <Expression xsi:type="NestedWorkflow">
+                          <Name>Offset by modal value</Name>
+                          <Workflow>
+                            <Nodes>
+                              <Expression xsi:type="Combinator">
+                                <Combinator xsi:type="q3:ConvertScale">
+                                  <q3:Depth xsi:nil="true" />
+                                  <q3:Scale>1</q3:Scale>
+                                  <q3:Shift>0</q3:Shift>
+                                </Combinator>
+                              </Expression>
+                              <Expression xsi:type="ExternalizedPropertyOfDoubleConvertScale">
+                                <MemberName>Shift</MemberName>
+                                <Name>Shift</Name>
+                                <Value>0</Value>
+                              </Expression>
+                              <Expression xsi:type="WorkflowInput">
+                                <Name>Source1</Name>
+                              </Expression>
+                              <Expression xsi:type="WorkflowOutput" />
+                              <Expression xsi:type="Multiply">
+                                <Operand xsi:type="DoubleProperty">
+                                  <Value>0</Value>
+                                </Operand>
+                              </Expression>
+                              <Expression xsi:type="MemberSelector">
+                                <Selector>Source.Val0</Selector>
+                              </Expression>
+                              <Expression xsi:type="Combinator">
+                                <Combinator xsi:type="q3:Average" />
+                              </Expression>
+                              <Expression xsi:type="Combinator">
+                                <Combinator xsi:type="q3:Buffer">
+                                  <q3:Count>3</q3:Count>
+                                  <q3:Skip>1</q3:Skip>
+                                </Combinator>
+                              </Expression>
+                              <Expression xsi:type="MemberSelector">
+                                <Selector>Source.MaxLocation.X</Selector>
+                              </Expression>
+                              <Expression xsi:type="Combinator">
+                                <Combinator xsi:type="q3:Extrema" />
+                              </Expression>
+                              <Expression xsi:type="Combinator">
+                                <Combinator xsi:type="q3:Histogram1D">
+                                  <q3:Min>0</q3:Min>
+                                  <q3:Max>255</q3:Max>
+                                  <q3:Bins>255</q3:Bins>
+                                  <q3:Normalize>true</q3:Normalize>
+                                  <q3:Accumulate>false</q3:Accumulate>
+                                </Combinator>
+                              </Expression>
+                              <Expression xsi:type="ExternalizedPropertyOfDoubleMultiplyBuilder">
+                                <MemberName>Value</MemberName>
+                                <Name>Grey shift factor</Name>
+                                <Value>0</Value>
+                              </Expression>
+                            </Nodes>
+                            <Edges>
+                              <Edge>
+                                <From>0</From>
+                                <To>3</To>
+                                <Label>Source1</Label>
+                              </Edge>
+                              <Edge>
+                                <From>1</From>
+                                <To>0</To>
+                                <Label>Source2</Label>
+                              </Edge>
+                              <Edge>
+                                <From>2</From>
+                                <To>10</To>
+                                <Label>Source1</Label>
+                              </Edge>
+                              <Edge>
+                                <From>2</From>
+                                <To>0</To>
+                                <Label>Source1</Label>
+                              </Edge>
+                              <Edge>
+                                <From>4</From>
+                                <To>1</To>
+                                <Label>Source1</Label>
+                              </Edge>
+                              <Edge>
+                                <From>5</From>
+                                <To>4</To>
+                                <Label>Source1</Label>
+                              </Edge>
+                              <Edge>
+                                <From>6</From>
+                                <To>5</To>
+                                <Label>Source1</Label>
+                              </Edge>
+                              <Edge>
+                                <From>7</From>
+                                <To>6</To>
+                                <Label>Source1</Label>
+                              </Edge>
+                              <Edge>
+                                <From>8</From>
+                                <To>7</To>
+                                <Label>Source1</Label>
+                              </Edge>
+                              <Edge>
+                                <From>9</From>
+                                <To>8</To>
+                                <Label>Source1</Label>
+                              </Edge>
+                              <Edge>
+                                <From>10</From>
+                                <To>9</To>
+                                <Label>Source1</Label>
+                              </Edge>
+                              <Edge>
+                                <From>11</From>
+                                <To>4</To>
+                                <Label>Source2</Label>
+                              </Edge>
+                            </Edges>
+                          </Workflow>
+                        </Expression>
+                        <Expression xsi:type="SubscribeSubject">
+                          <Name>FramesToSum</Name>
                         </Expression>
                       </Nodes>
                       <Edges>
                         <Edge>
                           <From>0</From>
-                          <To>2</To>
+                          <To>5</To>
                           <Label>Source1</Label>
                         </Edge>
                         <Edge>
@@ -234,64 +316,119 @@ def process(value):
                           <To>1</To>
                           <Label>Source1</Label>
                         </Edge>
+                        <Edge>
+                          <From>4</From>
+                          <To>2</To>
+                          <Label>Source1</Label>
+                        </Edge>
+                        <Edge>
+                          <From>5</From>
+                          <To>2</To>
+                          <Label>Source2</Label>
+                        </Edge>
+                        <Edge>
+                          <From>6</From>
+                          <To>4</To>
+                          <Label>Source1</Label>
+                        </Edge>
                       </Edges>
                     </Workflow>
                   </Expression>
-                  <Expression xsi:type="ExternalizedPropertyOfInt32ElementCountWindow">
-                    <MemberName>Count</MemberName>
-                    <Name>Sum Frames</Name>
-                    <Value>2</Value>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="TriggeredWindow">
+                      <Count xsi:nil="true" />
+                    </Combinator>
                   </Expression>
-                  <Expression xsi:type="NestedWorkflow">
-                    <Name>Offset by modal value</Name>
+                  <Expression xsi:type="SubscribeSubject">
+                    <Name>FramesToSum</Name>
+                  </Expression>
+                  <Expression xsi:type="WorkflowInput">
+                    <Name>Source1</Name>
+                  </Expression>
+                  <Expression xsi:type="WorkflowOutput" />
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="Sample" />
+                  </Expression>
+                </Nodes>
+                <Edges>
+                  <Edge>
+                    <From>0</From>
+                    <To>6</To>
+                    <Label>Source1</Label>
+                  </Edge>
+                  <Edge>
+                    <From>1</From>
+                    <To>7</To>
+                    <Label>Source1</Label>
+                  </Edge>
+                  <Edge>
+                    <From>2</From>
+                    <To>1</To>
+                    <Label>Source1</Label>
+                  </Edge>
+                  <Edge>
+                    <From>2</From>
+                    <To>7</To>
+                    <Label>Source2</Label>
+                  </Edge>
+                  <Edge>
+                    <From>3</From>
+                    <To>2</To>
+                    <Label>Source1</Label>
+                  </Edge>
+                  <Edge>
+                    <From>4</From>
+                    <To>3</To>
+                    <Label>Source2</Label>
+                  </Edge>
+                  <Edge>
+                    <From>4</From>
+                    <To>1</To>
+                    <Label>Source2</Label>
+                  </Edge>
+                  <Edge>
+                    <From>5</From>
+                    <To>3</To>
+                    <Label>Source1</Label>
+                  </Edge>
+                  <Edge>
+                    <From>7</From>
+                    <To>0</To>
+                    <Label>Source1</Label>
+                  </Edge>
+                </Edges>
+              </Workflow>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="TimeInterval" />
+            </Expression>
+            <Expression xsi:type="NestedWorkflow">
+              <Name>Spacebar: take photo</Name>
+              <Workflow>
+                <Nodes>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="q5:AudioPlayback">
+                      <q5:DeviceName>Generic Software on Headphones (SBH20 Stereo)</q5:DeviceName>
+                      <q5:Frequency>44100</q5:Frequency>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="SelectMany">
+                    <Name>Camera snap</Name>
                     <Workflow>
                       <Nodes>
                         <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="q5:ConvertScale">
-                            <q5:Depth xsi:nil="true" />
-                            <q5:Scale>1</q5:Scale>
-                            <q5:Shift>-9</q5:Shift>
+                          <Combinator xsi:type="q5:AudioReader">
+                            <q5:FileName>Camera-shutter.wav</q5:FileName>
+                            <q5:BufferLength>250</q5:BufferLength>
                           </Combinator>
-                        </Expression>
-                        <Expression xsi:type="ExternalizedPropertyOfDoubleConvertScale">
-                          <MemberName>Shift</MemberName>
-                          <Name>Shift</Name>
-                          <Value>0</Value>
                         </Expression>
                         <Expression xsi:type="WorkflowInput">
                           <Name>Source1</Name>
                         </Expression>
                         <Expression xsi:type="WorkflowOutput" />
-                        <Expression xsi:type="Multiply">
-                          <Operand xsi:type="DoubleProperty">
-                            <Value>-1</Value>
-                          </Operand>
-                        </Expression>
-                        <Expression xsi:type="MemberSelector">
-                          <Selector>Source.Val0</Selector>
-                        </Expression>
                         <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="q5:Average" />
-                        </Expression>
-                        <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="q5:Buffer">
-                            <q5:Count>10</q5:Count>
-                            <q5:Skip>1</q5:Skip>
-                          </Combinator>
-                        </Expression>
-                        <Expression xsi:type="MemberSelector">
-                          <Selector>Source.MaxLocation.X</Selector>
-                        </Expression>
-                        <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="q5:Extrema" />
-                        </Expression>
-                        <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="q5:Histogram1D">
-                            <q5:Min>0</q5:Min>
-                            <q5:Max>255</q5:Max>
-                            <q5:Bins>255</q5:Bins>
-                            <q5:Normalize>true</q5:Normalize>
-                            <q5:Accumulate>false</q5:Accumulate>
+                          <Combinator xsi:type="Take">
+                            <Count>1</Count>
                           </Combinator>
                         </Expression>
                       </Nodes>
@@ -304,69 +441,38 @@ def process(value):
                         <Edge>
                           <From>1</From>
                           <To>0</To>
-                          <Label>Source2</Label>
-                        </Edge>
-                        <Edge>
-                          <From>2</From>
-                          <To>10</To>
                           <Label>Source1</Label>
                         </Edge>
                         <Edge>
-                          <From>2</From>
-                          <To>0</To>
-                          <Label>Source1</Label>
-                        </Edge>
-                        <Edge>
-                          <From>4</From>
-                          <To>1</To>
-                          <Label>Source1</Label>
-                        </Edge>
-                        <Edge>
-                          <From>5</From>
-                          <To>4</To>
-                          <Label>Source1</Label>
-                        </Edge>
-                        <Edge>
-                          <From>6</From>
-                          <To>5</To>
-                          <Label>Source1</Label>
-                        </Edge>
-                        <Edge>
-                          <From>7</From>
-                          <To>6</To>
-                          <Label>Source1</Label>
-                        </Edge>
-                        <Edge>
-                          <From>8</From>
-                          <To>7</To>
-                          <Label>Source1</Label>
-                        </Edge>
-                        <Edge>
-                          <From>9</From>
-                          <To>8</To>
-                          <Label>Source1</Label>
-                        </Edge>
-                        <Edge>
-                          <From>10</From>
-                          <To>9</To>
+                          <From>3</From>
+                          <To>2</To>
                           <Label>Source1</Label>
                         </Edge>
                       </Edges>
                     </Workflow>
                   </Expression>
-                  <Expression xsi:type="SubscribeSubject">
-                    <Name>FramesToSum</Name>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="Sample" />
                   </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="q6:KeyDown">
+                      <q6:Filter>Space</q6:Filter>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="SubscribeSubject">
+                    <Name>Image Preview</Name>
+                  </Expression>
+                  <Expression xsi:type="WorkflowOutput" />
                 </Nodes>
                 <Edges>
                   <Edge>
-                    <From>0</From>
-                    <To>5</To>
+                    <From>1</From>
+                    <To>0</To>
                     <Label>Source1</Label>
                   </Edge>
                   <Edge>
                     <From>2</From>
-                    <To>3</To>
+                    <To>5</To>
                     <Label>Source1</Label>
                   </Edge>
                   <Edge>
@@ -375,113 +481,123 @@ def process(value):
                     <Label>Source1</Label>
                   </Edge>
                   <Edge>
-                    <From>4</From>
-                    <To>2</To>
-                    <Label>Source1</Label>
-                  </Edge>
-                  <Edge>
-                    <From>5</From>
+                    <From>3</From>
                     <To>2</To>
                     <Label>Source2</Label>
                   </Edge>
                   <Edge>
-                    <From>6</From>
-                    <To>4</To>
+                    <From>4</From>
+                    <To>2</To>
                     <Label>Source1</Label>
                   </Edge>
                 </Edges>
               </Workflow>
             </Expression>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="TriggeredWindow">
-                <Count xsi:nil="true" />
-              </Combinator>
-            </Expression>
-            <Expression xsi:type="SubscribeSubject">
-              <Name>FramesToSum</Name>
-            </Expression>
-            <Expression xsi:type="WorkflowInput">
-              <Name>Source1</Name>
-            </Expression>
-            <Expression xsi:type="WorkflowOutput" />
-          </Nodes>
-          <Edges>
-            <Edge>
-              <From>0</From>
-              <To>6</To>
-              <Label>Source1</Label>
-            </Edge>
-            <Edge>
-              <From>1</From>
-              <To>0</To>
-              <Label>Source1</Label>
-            </Edge>
-            <Edge>
-              <From>2</From>
-              <To>1</To>
-              <Label>Source1</Label>
-            </Edge>
-            <Edge>
-              <From>3</From>
-              <To>2</To>
-              <Label>Source1</Label>
-            </Edge>
-            <Edge>
-              <From>4</From>
-              <To>3</To>
-              <Label>Source2</Label>
-            </Edge>
-            <Edge>
-              <From>4</From>
-              <To>1</To>
-              <Label>Source2</Label>
-            </Edge>
-            <Edge>
-              <From>5</From>
-              <To>3</To>
-              <Label>Source1</Label>
-            </Edge>
-          </Edges>
-        </Workflow>
-      </Expression>
-      <Expression xsi:type="ReplaySubject">
-        <Name>FramesToSum</Name>
-        <BufferSize>1</BufferSize>
-      </Expression>
-      <Expression xsi:type="NestedWorkflow">
-        <Name>Spacebar: take photo</Name>
-        <Workflow>
-          <Nodes>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q6:AudioPlayback">
-                <q6:DeviceName>Generic Software on Headphones (SBH20 Stereo)</q6:DeviceName>
-                <q6:Frequency>44100</q6:Frequency>
-              </Combinator>
-            </Expression>
-            <Expression xsi:type="SelectMany">
-              <Name>Camera snap</Name>
+            <Expression xsi:type="NestedWorkflow">
+              <Name>Up/down: control exposure</Name>
               <Workflow>
                 <Nodes>
+                  <Expression xsi:type="Scan">
+                    <Workflow>
+                      <Nodes>
+                        <Expression xsi:type="WorkflowInput">
+                          <Name>Source1</Name>
+                        </Expression>
+                        <Expression xsi:type="WorkflowOutput" />
+                        <Expression xsi:type="MemberSelector">
+                          <Selector>Source.Accumulation</Selector>
+                        </Expression>
+                        <Expression xsi:type="MemberSelector">
+                          <Selector>Source.Value</Selector>
+                        </Expression>
+                        <Expression xsi:type="Combinator">
+                          <Combinator xsi:type="Zip" />
+                        </Expression>
+                        <Expression xsi:type="Add" />
+                        <Expression xsi:type="q4:PythonTransform">
+                          <q4:Script>@returns(int)
+def process(value):
+  return 1 if value&lt;=0 else value</q4:Script>
+                        </Expression>
+                      </Nodes>
+                      <Edges>
+                        <Edge>
+                          <From>0</From>
+                          <To>2</To>
+                          <Label>Source1</Label>
+                        </Edge>
+                        <Edge>
+                          <From>0</From>
+                          <To>3</To>
+                          <Label>Source1</Label>
+                        </Edge>
+                        <Edge>
+                          <From>2</From>
+                          <To>4</To>
+                          <Label>Source1</Label>
+                        </Edge>
+                        <Edge>
+                          <From>3</From>
+                          <To>4</To>
+                          <Label>Source2</Label>
+                        </Edge>
+                        <Edge>
+                          <From>4</From>
+                          <To>5</To>
+                          <Label>Source1</Label>
+                        </Edge>
+                        <Edge>
+                          <From>5</From>
+                          <To>6</To>
+                          <Label>Source1</Label>
+                        </Edge>
+                        <Edge>
+                          <From>6</From>
+                          <To>1</To>
+                          <Label>Source1</Label>
+                        </Edge>
+                      </Edges>
+                    </Workflow>
+                  </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="q6:AudioReader">
-                      <q6:FileName>Camera-shutter.wav</q6:FileName>
-                      <q6:BufferLength>250</q6:BufferLength>
+                    <Combinator xsi:type="Merge" />
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="IntProperty">
+                      <Value>1</Value>
                     </Combinator>
                   </Expression>
-                  <Expression xsi:type="WorkflowInput">
-                    <Name>Source1</Name>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="IntProperty">
+                      <Value>-1</Value>
+                    </Combinator>
                   </Expression>
-                  <Expression xsi:type="WorkflowOutput" />
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="Take">
                       <Count>1</Count>
                     </Combinator>
                   </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="q6:KeyDown">
+                      <q6:Filter>Up</q6:Filter>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="q6:KeyDown">
+                      <q6:Filter>Down</q6:Filter>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="IntProperty">
+                      <Value>1</Value>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="WorkflowOutput" />
                 </Nodes>
                 <Edges>
                   <Edge>
                     <From>0</From>
-                    <To>3</To>
+                    <To>8</To>
                     <Label>Source1</Label>
                   </Edge>
                   <Edge>
@@ -490,119 +606,91 @@ def process(value):
                     <Label>Source1</Label>
                   </Edge>
                   <Edge>
+                    <From>2</From>
+                    <To>1</To>
+                    <Label>Source1</Label>
+                  </Edge>
+                  <Edge>
                     <From>3</From>
+                    <To>1</To>
+                    <Label>Source2</Label>
+                  </Edge>
+                  <Edge>
+                    <From>4</From>
+                    <To>1</To>
+                    <Label>Source3</Label>
+                  </Edge>
+                  <Edge>
+                    <From>5</From>
                     <To>2</To>
+                    <Label>Source1</Label>
+                  </Edge>
+                  <Edge>
+                    <From>6</From>
+                    <To>3</To>
+                    <Label>Source1</Label>
+                  </Edge>
+                  <Edge>
+                    <From>7</From>
+                    <To>4</To>
                     <Label>Source1</Label>
                   </Edge>
                 </Edges>
               </Workflow>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="Sample" />
-            </Expression>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q4:KeyDown">
-                <q4:Filter>Space</q4:Filter>
-              </Combinator>
-            </Expression>
-            <Expression xsi:type="SubscribeSubject">
-              <Name>Image Preview</Name>
-            </Expression>
-            <Expression xsi:type="WorkflowOutput" />
-          </Nodes>
-          <Edges>
-            <Edge>
-              <From>1</From>
-              <To>0</To>
-              <Label>Source1</Label>
-            </Edge>
-            <Edge>
-              <From>2</From>
-              <To>5</To>
-              <Label>Source1</Label>
-            </Edge>
-            <Edge>
-              <From>3</From>
-              <To>1</To>
-              <Label>Source1</Label>
-            </Edge>
-            <Edge>
-              <From>3</From>
-              <To>2</To>
-              <Label>Source2</Label>
-            </Edge>
-            <Edge>
-              <From>4</From>
-              <To>2</To>
-              <Label>Source1</Label>
-            </Edge>
-          </Edges>
-        </Workflow>
-      </Expression>
-      <Expression xsi:type="PublishSubject">
-        <Name>Image Preview</Name>
-      </Expression>
-      <Expression xsi:type="Combinator">
-        <Combinator xsi:type="q2:SaveImage">
-          <q2:FileName>Gel image .jpg</q2:FileName>
-          <q2:Suffix>Timestamp</q2:Suffix>
-        </Combinator>
-      </Expression>
-      <Expression xsi:type="NestedWorkflow">
-        <Name>Calculate FPS</Name>
-        <Workflow>
-          <Nodes>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q5:Average" />
-            </Expression>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q5:Buffer">
-                <q5:Count>50</q5:Count>
-                <q5:Skip>1</q5:Skip>
-              </Combinator>
-            </Expression>
-            <Expression xsi:type="q3:ExpressionTransform">
-              <q3:Expression>1000/it</q3:Expression>
-            </Expression>
-            <Expression xsi:type="MemberSelector">
-              <Selector>Source.Interval.TotalMilliseconds</Selector>
+              <Combinator xsi:type="q2:Grayscale" />
             </Expression>
             <Expression xsi:type="WorkflowInput">
               <Name>Source1</Name>
             </Expression>
-            <Expression xsi:type="WorkflowOutput" />
           </Nodes>
           <Edges>
             <Edge>
-              <From>0</From>
-              <To>5</To>
-              <Label>Source1</Label>
-            </Edge>
-            <Edge>
-              <From>1</From>
+              <From>4</From>
               <To>0</To>
               <Label>Source1</Label>
             </Edge>
             <Edge>
-              <From>2</From>
+              <From>5</From>
               <To>1</To>
               <Label>Source1</Label>
             </Edge>
             <Edge>
-              <From>3</From>
+              <From>6</From>
               <To>2</To>
               <Label>Source1</Label>
             </Edge>
             <Edge>
-              <From>4</From>
+              <From>7</From>
               <To>3</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>8</From>
+              <To>4</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>8</From>
+              <To>5</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>9</From>
+              <To>8</To>
               <Label>Source1</Label>
             </Edge>
           </Edges>
         </Workflow>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="TimeInterval" />
+        <Combinator xsi:type="TakeUntil" />
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q6:KeyDown">
+          <q6:Filter>F5</q6:Filter>
+        </Combinator>
       </Expression>
     </Nodes>
     <Edges>
@@ -618,47 +706,29 @@ def process(value):
       </Edge>
       <Edge>
         <From>2</From>
-        <To>4</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>2</From>
-        <To>10</To>
+        <To>3</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
         <From>3</From>
-        <To>5</To>
+        <To>4</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
-        <From>4</From>
-        <To>7</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>6</From>
-        <To>8</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>10</From>
-        <To>9</To>
-        <Label>Source1</Label>
+        <From>5</From>
+        <To>4</To>
+        <Label>Source2</Label>
       </Edge>
     </Edges>
   </Workflow>
   <ExtensionTypes>
     <Type>Bonsai.PointGrey.FlyCapture, Bonsai.PointGrey, Version=2.2.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Vision.Grayscale, Bonsai.Vision, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Reactive.Zip, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Expressions.AddBuilder, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Vision.Crop, Bonsai.Vision, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Dsp.Average, Bonsai.Dsp, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Dsp.Buffer, Bonsai.Dsp, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Scripting.ExpressionTransform, Bonsai.Scripting, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Vision.SaveImage, Bonsai.Vision, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Scripting.PythonTransform, Bonsai.Scripting, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Expressions.ScanBuilder, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Reactive.Merge, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Expressions.IntProperty, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Reactive.Take, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Windows.Input.KeyDown, Bonsai.Windows.Input, Version=2.2.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.CombineLatest, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.ElementCountWindow, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Dsp.Accumulate, Bonsai.Dsp, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
@@ -668,16 +738,22 @@ def process(value):
     <Type>Bonsai.Expressions.ExternalizedProperty`2[[System.Double, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[Bonsai.Dsp.ConvertScale, Bonsai.Dsp, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null]], Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Expressions.MultiplyBuilder, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Expressions.DoubleProperty, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Dsp.Average, Bonsai.Dsp, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Dsp.Buffer, Bonsai.Dsp, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Dsp.Extrema, Bonsai.Dsp, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Dsp.Histogram1D, Bonsai.Dsp, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Expressions.ExternalizedProperty`2[[System.Double, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[Bonsai.Expressions.MultiplyBuilder, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null]], Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.TriggeredWindow, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Reactive.Sample, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Reactive.TimeInterval, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Audio.AudioPlayback, Bonsai.Audio, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Audio.AudioReader, Bonsai.Audio, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Reactive.Sample, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Vision.SaveImage, Bonsai.Vision, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Scripting.ExpressionTransform, Bonsai.Scripting, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Reactive.TimeInterval, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Reactive.Take, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Windows.Input.KeyDown, Bonsai.Windows.Input, Version=2.2.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Reactive.Zip, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Expressions.AddBuilder, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Expressions.ScanBuilder, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Reactive.Merge, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Expressions.IntProperty, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Vision.Grayscale, Bonsai.Vision, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Reactive.TakeUntil, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
   </ExtensionTypes>
 </WorkflowBuilder>
