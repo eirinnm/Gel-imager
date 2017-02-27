@@ -198,7 +198,7 @@ def process(value):
                   <Expression xsi:type="WorkflowOutput" />
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="ElementCountWindow">
-                      <Count>3</Count>
+                      <Count>1</Count>
                       <Skip xsi:nil="true" />
                     </Combinator>
                   </Expression>
@@ -250,7 +250,7 @@ def process(value):
                           <Combinator xsi:type="q5:ConvertScale">
                             <q5:Depth xsi:nil="true" />
                             <q5:Scale>1</q5:Scale>
-                            <q5:Shift>-14.700000000000001</q5:Shift>
+                            <q5:Shift>-9</q5:Shift>
                           </Combinator>
                         </Expression>
                         <Expression xsi:type="ExternalizedPropertyOfDoubleConvertScale">
@@ -548,6 +548,62 @@ def process(value):
           <q2:Suffix>Timestamp</q2:Suffix>
         </Combinator>
       </Expression>
+      <Expression xsi:type="NestedWorkflow">
+        <Name>Calculate FPS</Name>
+        <Workflow>
+          <Nodes>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="q5:Average" />
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="q5:Buffer">
+                <q5:Count>50</q5:Count>
+                <q5:Skip>1</q5:Skip>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="q3:ExpressionTransform">
+              <q3:Expression>1000/it</q3:Expression>
+            </Expression>
+            <Expression xsi:type="MemberSelector">
+              <Selector>Source.Interval.TotalMilliseconds</Selector>
+            </Expression>
+            <Expression xsi:type="WorkflowInput">
+              <Name>Source1</Name>
+            </Expression>
+            <Expression xsi:type="WorkflowOutput" />
+          </Nodes>
+          <Edges>
+            <Edge>
+              <From>0</From>
+              <To>5</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>1</From>
+              <To>0</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>2</From>
+              <To>1</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>3</From>
+              <To>2</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>4</From>
+              <To>3</To>
+              <Label>Source1</Label>
+            </Edge>
+          </Edges>
+        </Workflow>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="TimeInterval" />
+      </Expression>
     </Nodes>
     <Edges>
       <Edge>
@@ -566,6 +622,11 @@ def process(value):
         <Label>Source1</Label>
       </Edge>
       <Edge>
+        <From>2</From>
+        <To>10</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
         <From>3</From>
         <To>5</To>
         <Label>Source1</Label>
@@ -578,6 +639,11 @@ def process(value):
       <Edge>
         <From>6</From>
         <To>8</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>10</From>
+        <To>9</To>
         <Label>Source1</Label>
       </Edge>
     </Edges>
@@ -611,5 +677,7 @@ def process(value):
     <Type>Bonsai.Audio.AudioReader, Bonsai.Audio, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.Sample, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Vision.SaveImage, Bonsai.Vision, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Scripting.ExpressionTransform, Bonsai.Scripting, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Reactive.TimeInterval, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
   </ExtensionTypes>
 </WorkflowBuilder>
