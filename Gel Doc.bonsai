@@ -22,6 +22,7 @@
         </Combinator>
       </Expression>
       <Expression xsi:type="NestedWorkflow">
+        <Name>Processed image</Name>
         <Workflow>
           <Nodes>
             <Expression xsi:type="PublishSubject">
@@ -130,7 +131,7 @@ def process(value):
                         <Expression xsi:type="WorkflowOutput" />
                         <Expression xsi:type="Combinator">
                           <Combinator xsi:type="ElementCountWindow">
-                            <Count>19</Count>
+                            <Count>1</Count>
                             <Skip xsi:nil="true" />
                           </Combinator>
                         </Expression>
@@ -644,8 +645,14 @@ def process(value):
             <Expression xsi:type="WorkflowInput">
               <Name>Source1</Name>
             </Expression>
+            <Expression xsi:type="WorkflowOutput" />
           </Nodes>
           <Edges>
+            <Edge>
+              <From>0</From>
+              <To>10</To>
+              <Label>Source1</Label>
+            </Edge>
             <Edge>
               <From>4</From>
               <To>0</To>
