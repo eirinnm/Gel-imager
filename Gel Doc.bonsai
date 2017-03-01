@@ -22,7 +22,7 @@
         </Combinator>
       </Expression>
       <Expression xsi:type="NestedWorkflow">
-        <Name>Processed image</Name>
+        <Name />
         <Workflow>
           <Nodes>
             <Expression xsi:type="PublishSubject">
@@ -131,7 +131,7 @@ def process(value):
                         <Expression xsi:type="WorkflowOutput" />
                         <Expression xsi:type="Combinator">
                           <Combinator xsi:type="ElementCountWindow">
-                            <Count>1</Count>
+                            <Count>2</Count>
                             <Skip xsi:nil="true" />
                           </Combinator>
                         </Expression>
@@ -646,11 +646,25 @@ def process(value):
               <Name>Source1</Name>
             </Expression>
             <Expression xsi:type="WorkflowOutput" />
+            <Expression xsi:type="q4:PythonTransform">
+              <q4:Script>import subprocess
+@returns(bool)
+def process(value):
+  subprocess.Popen(['powershell.exe','-ExecutionPolicy', 'Bypass',
+                  '-file', 'C:\Users\Gel imager\Documents\Gel-imager\PhotoSender.ps1',
+                  '-dir', 'C:\Users\Gel imager\Pictures\Camera Roll'])
+  return True</q4:Script>
+            </Expression>
           </Nodes>
           <Edges>
             <Edge>
               <From>0</From>
               <To>10</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>2</From>
+              <To>11</To>
               <Label>Source1</Label>
             </Edge>
             <Edge>
@@ -691,13 +705,44 @@ def process(value):
           </Edges>
         </Workflow>
       </Expression>
-      <Expression xsi:type="Combinator">
-        <Combinator xsi:type="TakeUntil" />
+      <Expression xsi:type="PublishSubject">
+        <Name>Output image</Name>
       </Expression>
-      <Expression xsi:type="Combinator">
-        <Combinator xsi:type="q6:KeyDown">
-          <q6:Filter>F5</q6:Filter>
-        </Combinator>
+      <Expression xsi:type="NestedWorkflow">
+        <Name>Stop on F5</Name>
+        <Workflow>
+          <Nodes>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="TakeUntil" />
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="q6:KeyDown">
+                <q6:Filter>F5</q6:Filter>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="WorkflowInput">
+              <Name>Source1</Name>
+            </Expression>
+            <Expression xsi:type="WorkflowOutput" />
+          </Nodes>
+          <Edges>
+            <Edge>
+              <From>0</From>
+              <To>3</To>
+              <Label>Source1</Label>
+            </Edge>
+            <Edge>
+              <From>1</From>
+              <To>0</To>
+              <Label>Source2</Label>
+            </Edge>
+            <Edge>
+              <From>2</From>
+              <To>0</To>
+              <Label>Source1</Label>
+            </Edge>
+          </Edges>
+        </Workflow>
       </Expression>
     </Nodes>
     <Edges>
@@ -718,13 +763,13 @@ def process(value):
       </Edge>
       <Edge>
         <From>3</From>
-        <To>4</To>
+        <To>5</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
         <From>5</From>
         <To>4</To>
-        <Label>Source2</Label>
+        <Label>Source1</Label>
       </Edge>
     </Edges>
   </Workflow>

@@ -1,7 +1,8 @@
 ﻿param (
-    [string]$dir = $(Location)
+    [string]$dir = "C:\Users\Gel imager\Pictures\Camera Roll"
 )
 Write-host $dir
+write-host $PSScriptRoot
 ## Get the newest image in this folder:
 $img = Get-ChildItem $dir -Filter *.jpg | Sort-Object LastWriteTime -Descending | Select-Object -first 1
 if($img){
@@ -9,7 +10,8 @@ if($img){
 }
 
 ## Read a list of email addresses
-[System.Collections.ArrayList]$names = Get-Content .\EmailAddresses.txt
+$emailfilename = join-path ($PsScriptRoot) EmailAddresses.txt
+[System.Collections.ArrayList]$names = Get-Content $emailfilename
 
 
 Add-Type -AssemblyName System.Windows.Forms
@@ -67,7 +69,7 @@ $label5.AutoSize = $true
 $label5.ForeColor = "#ffffff"
 $label5.Width = 25
 $label5.Height = 10
-$label5.location = new-object system.drawing.point(5,5)
+$label5.location = new-object system.drawing.point(5,10)
 $label5.Font = "Microsoft Sans Serif,10"
 $PictureBox4.controls.Add($label5)
 if($img){
@@ -148,7 +150,7 @@ if($result -eq "OK") {
     ## remove the current name and insert it at the top of the list
     $names.remove($email)
     $names.insert(0,$email)
-    $names > .\EmailAddresses.txt
+    $names > $emailfilename
     #okay, now we email the file!
     $label2.text = "Sending..."
     $Credentials = Get-MyCredential (join-path ($PsScriptRoot) EmailPassword.xml)
