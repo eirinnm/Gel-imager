@@ -58,12 +58,12 @@
     <EditorDialogSettings>
       <Visible>true</Visible>
       <Location>
-        <X>191</X>
-        <Y>230</Y>
+        <X>1390</X>
+        <Y>417</Y>
       </Location>
       <Size>
-        <Width>525</Width>
-        <Height>423</Height>
+        <Width>598</Width>
+        <Height>454</Height>
       </Size>
       <WindowState>Normal</WindowState>
     </EditorDialogSettings>
@@ -203,18 +203,14 @@
       <DialogSettings>
         <Visible>false</Visible>
         <Location>
-          <X>52</X>
-          <Y>52</Y>
+          <X>0</X>
+          <Y>0</Y>
         </Location>
         <Size>
-          <Width>336</Width>
-          <Height>279</Height>
+          <Width>0</Width>
+          <Height>0</Height>
         </Size>
         <WindowState>Normal</WindowState>
-        <VisualizerTypeName>Bonsai.Design.Visualizers.BooleanTimeSeriesVisualizer</VisualizerTypeName>
-        <VisualizerSettings>
-          <BooleanTimeSeriesVisualizer />
-        </VisualizerSettings>
       </DialogSettings>
     </EditorVisualizerLayout>
   </DialogSettings>
