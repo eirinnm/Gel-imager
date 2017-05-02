@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <WorkflowBuilder Version="2.3.0">
-  <Workflow xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:q1="clr-namespace:Bonsai.Video;assembly=Bonsai.Video" xmlns:q2="clr-namespace:Bonsai.Vision;assembly=Bonsai.Vision" xmlns:q3="clr-namespace:Bonsai.Scripting;assembly=Bonsai.Scripting" xmlns:q4="clr-namespace:Bonsai.Windows.Input;assembly=Bonsai.Windows.Input" xmlns:q5="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp" xmlns:q6="clr-namespace:Bonsai.Audio;assembly=Bonsai.Audio" xmlns="https://horizongir.org/bonsai">
+  <Workflow xmlns:q8="clr-namespace:Bonsai.Windows.Input;assembly=Bonsai.Windows.Input" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:q1="clr-namespace:Bonsai.Video;assembly=Bonsai.Video" xmlns:q2="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders" xmlns:q3="clr-namespace:Bonsai.Vision;assembly=Bonsai.Vision" xmlns:q4="clr-namespace:Bonsai.Scripting;assembly=Bonsai.Scripting" xmlns:q5="clr-namespace:Bonsai.Shaders.Input;assembly=Bonsai.Shaders" xmlns:q6="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp" xmlns:q7="clr-namespace:Bonsai.Audio;assembly=Bonsai.Audio" xmlns="https://horizongir.org/bonsai">
     <Nodes>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="SampleInterval">
@@ -21,17 +21,23 @@
           </q1:Format>
         </Combinator>
       </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:UpdateTexture">
+          <q2:TextureName>Image</q2:TextureName>
+          <q2:InternalFormat>Rgba</q2:InternalFormat>
+        </Combinator>
+      </Expression>
       <Expression xsi:type="NestedWorkflow">
-        <Name />
+        <Name>Main workflow</Name>
         <Workflow>
           <Nodes>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="TimeInterval" />
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q2:SaveImage">
-                <q2:FileName>C:\Users\Gel imager\Pictures\Camera Roll\Gel image .jpg</q2:FileName>
-                <q2:Suffix>Timestamp</q2:Suffix>
+              <Combinator xsi:type="q3:SaveImage">
+                <q3:FileName>C:\Users\Gel imager\Pictures\Camera Roll\Gel image .jpg</q3:FileName>
+                <q3:Suffix>Timestamp</q3:Suffix>
               </Combinator>
             </Expression>
             <Expression xsi:type="ReplaySubject">
@@ -58,13 +64,14 @@
                         <Expression xsi:type="Combinator">
                           <Combinator xsi:type="Zip" />
                         </Expression>
-                        <Expression xsi:type="q3:PythonTransform">
-                          <q3:Script>from System import Single
+                        <Expression xsi:type="q4:PythonTransform">
+                          <q4:Name>Enforce min value</q4:Name>
+                          <q4:Script>from System import Single
 @returns(Single)
 def process(value):
-  return 1 if value&lt;=1 else value</q3:Script>
+  return 1 if value&lt;=1 else value</q4:Script>
                         </Expression>
-                        <Expression xsi:type="Multiply" />
+                        <Expression xsi:type="Add" />
                       </Nodes>
                       <Edges>
                         <Edge>
@@ -119,16 +126,6 @@ def process(value):
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="q4:KeyDown">
-                      <q4:Filter>Up</q4:Filter>
-                    </Combinator>
-                  </Expression>
-                  <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="q4:KeyDown">
-                      <q4:Filter>Down</q4:Filter>
-                    </Combinator>
-                  </Expression>
-                  <Expression xsi:type="Combinator">
                     <Combinator xsi:type="FloatProperty">
                       <Value>2</Value>
                     </Combinator>
@@ -136,14 +133,66 @@ def process(value):
                   <Expression xsi:type="WorkflowOutput" />
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="FloatProperty">
-                      <Value>0.5</Value>
+                      <Value>-2</Value>
                     </Combinator>
+                  </Expression>
+                  <Expression xsi:type="Condition">
+                    <Name>UpPressed</Name>
+                    <Workflow>
+                      <Nodes>
+                        <Expression xsi:type="WorkflowInput">
+                          <Name>Source1</Name>
+                        </Expression>
+                        <Expression xsi:type="WorkflowOutput" />
+                      </Nodes>
+                      <Edges>
+                        <Edge>
+                          <From>0</From>
+                          <To>1</To>
+                          <Label>Source1</Label>
+                        </Edge>
+                      </Edges>
+                    </Workflow>
+                  </Expression>
+                  <Expression xsi:type="Condition">
+                    <Name>DownPressed</Name>
+                    <Workflow>
+                      <Nodes>
+                        <Expression xsi:type="WorkflowInput">
+                          <Name>Source1</Name>
+                        </Expression>
+                        <Expression xsi:type="WorkflowOutput" />
+                      </Nodes>
+                      <Edges>
+                        <Edge>
+                          <From>0</From>
+                          <To>1</To>
+                          <Label>Source1</Label>
+                        </Edge>
+                      </Edges>
+                    </Workflow>
+                  </Expression>
+                  <Expression xsi:type="Equal">
+                    <Operand xsi:type="WorkflowPropertyOfKey">
+                      <Value>Up</Value>
+                    </Operand>
+                  </Expression>
+                  <Expression xsi:type="Equal">
+                    <Operand xsi:type="WorkflowPropertyOfKey">
+                      <Value>Down</Value>
+                    </Operand>
+                  </Expression>
+                  <Expression xsi:type="MemberSelector">
+                    <Selector>Source.EventArgs.Key</Selector>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="q5:KeyDown" />
                   </Expression>
                 </Nodes>
                 <Edges>
                   <Edge>
                     <From>0</From>
-                    <To>7</To>
+                    <To>5</To>
                     <Label>Source1</Label>
                   </Edge>
                   <Edge>
@@ -163,13 +212,8 @@ def process(value):
                   </Edge>
                   <Edge>
                     <From>4</From>
-                    <To>6</To>
-                    <Label>Source1</Label>
-                  </Edge>
-                  <Edge>
-                    <From>5</From>
-                    <To>8</To>
-                    <Label>Source1</Label>
+                    <To>1</To>
+                    <Label>Source2</Label>
                   </Edge>
                   <Edge>
                     <From>6</From>
@@ -177,9 +221,39 @@ def process(value):
                     <Label>Source3</Label>
                   </Edge>
                   <Edge>
+                    <From>7</From>
+                    <To>4</To>
+                    <Label>Source1</Label>
+                  </Edge>
+                  <Edge>
                     <From>8</From>
-                    <To>1</To>
-                    <Label>Source2</Label>
+                    <To>6</To>
+                    <Label>Source1</Label>
+                  </Edge>
+                  <Edge>
+                    <From>9</From>
+                    <To>7</To>
+                    <Label>Source1</Label>
+                  </Edge>
+                  <Edge>
+                    <From>10</From>
+                    <To>8</To>
+                    <Label>Source1</Label>
+                  </Edge>
+                  <Edge>
+                    <From>11</From>
+                    <To>9</To>
+                    <Label>Source1</Label>
+                  </Edge>
+                  <Edge>
+                    <From>11</From>
+                    <To>10</To>
+                    <Label>Source1</Label>
+                  </Edge>
+                  <Edge>
+                    <From>12</From>
+                    <To>11</To>
+                    <Label>Source1</Label>
                   </Edge>
                 </Edges>
               </Workflow>
@@ -189,16 +263,16 @@ def process(value):
               <Workflow>
                 <Nodes>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="q5:Average" />
+                    <Combinator xsi:type="q6:Average" />
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="q5:Buffer">
-                      <q5:Count>10</q5:Count>
-                      <q5:Skip>1</q5:Skip>
+                    <Combinator xsi:type="q6:Buffer">
+                      <q6:Count>10</q6:Count>
+                      <q6:Skip>1</q6:Skip>
                     </Combinator>
                   </Expression>
-                  <Expression xsi:type="q3:ExpressionTransform">
-                    <q3:Expression>1000/it</q3:Expression>
+                  <Expression xsi:type="q4:ExpressionTransform">
+                    <q4:Expression>1000/it</q4:Expression>
                   </Expression>
                   <Expression xsi:type="MemberSelector">
                     <Selector>Source.Interval.TotalMilliseconds</Selector>
@@ -242,9 +316,9 @@ def process(value):
               <Workflow>
                 <Nodes>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="q6:AudioPlayback">
-                      <q6:DeviceName>Generic Software on Headphones (SBH20 Stereo)</q6:DeviceName>
-                      <q6:Frequency>44100</q6:Frequency>
+                    <Combinator xsi:type="q7:AudioPlayback">
+                      <q7:DeviceName>Generic Software on Headphones (SBH20 Stereo)</q7:DeviceName>
+                      <q7:Frequency>44100</q7:Frequency>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="SelectMany">
@@ -252,9 +326,9 @@ def process(value):
                     <Workflow>
                       <Nodes>
                         <Expression xsi:type="Combinator">
-                          <Combinator xsi:type="q6:AudioReader">
-                            <q6:FileName>Camera-shutter.wav</q6:FileName>
-                            <q6:BufferLength>250</q6:BufferLength>
+                          <Combinator xsi:type="q7:AudioReader">
+                            <q7:FileName>Camera-shutter.wav</q7:FileName>
+                            <q7:BufferLength>250</q7:BufferLength>
                           </Combinator>
                         </Expression>
                         <Expression xsi:type="WorkflowInput">
@@ -290,8 +364,8 @@ def process(value):
                     <Combinator xsi:type="Sample" />
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="q4:KeyDown">
-                      <q4:Filter>Space</q4:Filter>
+                    <Combinator xsi:type="q8:KeyDown">
+                      <q8:Filter>Space</q8:Filter>
                     </Combinator>
                   </Expression>
                   <Expression xsi:type="SubscribeSubject">
@@ -330,23 +404,23 @@ def process(value):
             </Expression>
             <Expression xsi:type="WorkflowOutput" />
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q2:Grayscale" />
+              <Combinator xsi:type="q3:Grayscale" />
             </Expression>
             <Expression xsi:type="WorkflowInput">
               <Name>Source1</Name>
             </Expression>
-            <Expression xsi:type="q3:PythonTransform">
-              <q3:Script>import subprocess
+            <Expression xsi:type="q4:PythonTransform">
+              <q4:Script>import subprocess
 @returns(bool)
 def process(value):
   subprocess.Popen(['powershell.exe','-ExecutionPolicy', 'Bypass',
                   '-file', 'C:\Users\Gel imager\Documents\Gel-imager\PhotoSender.ps1',
                   '-dir', 'C:\Users\Gel imager\Pictures\Camera Roll'])
-  return True</q3:Script>
+  return True</q4:Script>
             </Expression>
-            <Expression xsi:type="q3:PythonTransform">
-              <q3:Name>Draw text</q3:Name>
-              <q3:Script>import clr
+            <Expression xsi:type="q4:PythonTransform">
+              <q4:Name>Draw text</q4:Name>
+              <q4:Script>import clr
 clr.AddReference("OpenCV.Net")
 from OpenCV.Net import *
 import datetime
@@ -365,7 +439,7 @@ def process(value):
   CV.CvtColor(image, output, ColorConversion.Gray2Bgr)
   CV.PutText(output,text,Point(15,30),font, textcol)
   return output
-</q3:Script>
+</q4:Script>
             </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="Sample" />
@@ -414,14 +488,14 @@ def process(value):
                         <Expression xsi:type="WorkflowOutput" />
                         <Expression xsi:type="Combinator">
                           <Combinator xsi:type="TakeLast">
-                            <Count>8</Count>
+                            <Count>1</Count>
                           </Combinator>
                         </Expression>
                         <Expression xsi:type="Accumulate" />
                         <Expression xsi:type="ExternalizedPropertyOfInt32TakeLast">
                           <MemberName>Count</MemberName>
                           <Name>Count</Name>
-                          <Value>8</Value>
+                          <Value>1</Value>
                         </Expression>
                         <Expression xsi:type="Combinator">
                           <Combinator xsi:type="Concat" />
@@ -638,50 +712,28 @@ def process(value):
           </Edges>
         </Workflow>
       </Expression>
-      <Expression xsi:type="PublishSubject">
-        <Name>Output image</Name>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="Merge" />
       </Expression>
-      <Expression xsi:type="NestedWorkflow">
-        <Name>Stop on F5</Name>
-        <Workflow>
-          <Nodes>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="TakeUntil" />
-            </Expression>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q4:KeyDown">
-                <q4:Filter>F5</q4:Filter>
-              </Combinator>
-            </Expression>
-            <Expression xsi:type="WorkflowInput">
-              <Name>Source1</Name>
-            </Expression>
-            <Expression xsi:type="WorkflowOutput" />
-          </Nodes>
-          <Edges>
-            <Edge>
-              <From>0</From>
-              <To>3</To>
-              <Label>Source1</Label>
-            </Edge>
-            <Edge>
-              <From>1</From>
-              <To>0</To>
-              <Label>Source2</Label>
-            </Edge>
-            <Edge>
-              <From>2</From>
-              <To>0</To>
-              <Label>Source1</Label>
-            </Edge>
-          </Edges>
-        </Workflow>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="q2:WindowClosed" />
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="TakeUntil" />
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="TakeUntil" />
       </Expression>
     </Nodes>
     <Edges>
       <Edge>
         <From>0</From>
-        <To>2</To>
+        <To>6</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>0</From>
+        <To>7</To>
         <Label>Source1</Label>
       </Edge>
       <Edge>
@@ -690,13 +742,33 @@ def process(value):
         <Label>Source1</Label>
       </Edge>
       <Edge>
-        <From>2</From>
+        <From>3</From>
         <To>4</To>
-        <Label>Source1</Label>
+        <Label>Source2</Label>
+      </Edge>
+      <Edge>
+        <From>3</From>
+        <To>7</To>
+        <Label>Source2</Label>
       </Edge>
       <Edge>
         <From>4</From>
+        <To>2</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>5</From>
+        <To>6</To>
+        <Label>Source2</Label>
+      </Edge>
+      <Edge>
+        <From>6</From>
         <To>3</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>7</From>
+        <To>4</To>
         <Label>Source1</Label>
       </Edge>
     </Edges>
@@ -704,22 +776,26 @@ def process(value):
   <ExtensionTypes>
     <Type>Bonsai.Reactive.SampleInterval, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Video.VideoCaptureDevice, Bonsai.Video, Version=2.2.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Shaders.UpdateTexture, Bonsai.Shaders, Version=0.14.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.TimeInterval, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Vision.SaveImage, Bonsai.Vision, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.Zip, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Scripting.PythonTransform, Bonsai.Scripting, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Expressions.MultiplyBuilder, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Expressions.AddBuilder, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Expressions.ScanBuilder, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.Merge, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Expressions.FloatProperty, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.Take, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Windows.Input.KeyDown, Bonsai.Windows.Input, Version=2.2.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Expressions.EqualBuilder, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Expressions.WorkflowProperty`1[[OpenTK.Input.Key, OpenTK, Version=1.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4]], Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Shaders.Input.KeyDown, Bonsai.Shaders, Version=0.14.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Dsp.Average, Bonsai.Dsp, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Dsp.Buffer, Bonsai.Dsp, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Scripting.ExpressionTransform, Bonsai.Scripting, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Audio.AudioPlayback, Bonsai.Audio, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Audio.AudioReader, Bonsai.Audio, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.Sample, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Windows.Input.KeyDown, Bonsai.Windows.Input, Version=2.2.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Vision.Grayscale, Bonsai.Vision, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.CombineLatest, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.Switch, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
@@ -731,6 +807,7 @@ def process(value):
     <Type>Bonsai.Reactive.Last, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Expressions.ExternalizedProperty`2[[System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[Bonsai.Reactive.ElementCountWindow, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null]], Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Expressions.DivideBuilder, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Shaders.WindowClosed, Bonsai.Shaders, Version=0.14.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.TakeUntil, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
   </ExtensionTypes>
 </WorkflowBuilder>
