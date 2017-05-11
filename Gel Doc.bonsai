@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <WorkflowBuilder Version="2.3.0">
-  <Workflow xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:q1="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders" xmlns:q2="clr-namespace:Bonsai.PointGrey;assembly=Bonsai.PointGrey" xmlns:q3="clr-namespace:Bonsai.Vision;assembly=Bonsai.Vision" xmlns:q4="clr-namespace:Bonsai.Scripting;assembly=Bonsai.Scripting" xmlns:q5="clr-namespace:Bonsai.Shaders.Input;assembly=Bonsai.Shaders" xmlns:q6="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp" xmlns:q7="clr-namespace:Bonsai.Audio;assembly=Bonsai.Audio" xmlns="https://horizongir.org/bonsai">
+  <Workflow xmlns:q8="clr-namespace:Bonsai.Windows.Input;assembly=Bonsai.Windows.Input" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:q1="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders" xmlns:q2="clr-namespace:Bonsai.Video;assembly=Bonsai.Video" xmlns:q3="clr-namespace:Bonsai.Vision;assembly=Bonsai.Vision" xmlns:q4="clr-namespace:Bonsai.Scripting;assembly=Bonsai.Scripting" xmlns:q5="clr-namespace:Bonsai.Shaders.Input;assembly=Bonsai.Shaders" xmlns:q6="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp" xmlns:q7="clr-namespace:Bonsai.Audio;assembly=Bonsai.Audio" xmlns="https://horizongir.org/bonsai">
     <Nodes>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="q1:UpdateTexture">
@@ -15,13 +15,23 @@
         <Combinator xsi:type="TakeUntil" />
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="q2:FlyCapture">
+        <Combinator xsi:type="q2:VideoCaptureDevice">
           <q2:Index>0</q2:Index>
-          <q2:ColorProcessing>Default</q2:ColorProcessing>
+          <q2:Format>
+            <q2:FrameSize>
+              <q2:Width>1280</q2:Width>
+              <q2:Height>720</q2:Height>
+            </q2:FrameSize>
+            <q2:AverageFrameRate>29</q2:AverageFrameRate>
+            <q2:MaximumFrameRate>30</q2:MaximumFrameRate>
+            <q2:BitCount>16</q2:BitCount>
+          </q2:Format>
         </Combinator>
       </Expression>
-      <Expression xsi:type="MemberSelector">
-        <Selector>Source.Image</Selector>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="SampleInterval">
+          <Interval>PT0.1S</Interval>
+        </Combinator>
       </Expression>
       <Expression xsi:type="NestedWorkflow">
         <Name>Main workflow</Name>
@@ -508,9 +518,19 @@ def process(value):
   exptime = value.Item2
   stability = value.Item3
   invertoption = value.Item4
+  factor = value.Item5
   #exptime = numframes * 0.1
   text = datetime.datetime.now().strftime("%x %X")
   text = text + " exposure = %0.2fs stability = %0.0f%%" % (exptime, stability)
+  if factor&gt;1.0:
+    newWidth = image.Width/factor
+    newHeight = image.Height/factor
+    newX = (image.Width - newWidth)/2
+    newY = (image.Height - newHeight)/2
+    roi = image.GetSubRect(Rect(newX,newY,newWidth, newHeight))
+    image2 = IplImage(image.Size, image.Depth, 1)
+    CV.Resize(roi, image2)
+    image = image2
   inverted = IplImage(image.Size, image.Depth, 1)
   output = IplImage(image.Size, image.Depth, 3)
   if invertoption:
@@ -861,11 +881,24 @@ def process(value):
                     <Combinator xsi:type="q5:KeyDown" />
                   </Expression>
                   <Expression xsi:type="WorkflowOutput" />
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="BooleanProperty">
+                      <Value>false</Value>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="Take">
+                      <Count>1</Count>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="Merge" />
+                  </Expression>
                 </Nodes>
                 <Edges>
                   <Edge>
                     <From>0</From>
-                    <To>3</To>
+                    <To>6</To>
                     <Label>Source1</Label>
                   </Edge>
                   <Edge>
@@ -876,6 +909,250 @@ def process(value):
                   <Edge>
                     <From>2</From>
                     <To>1</To>
+                    <Label>Source1</Label>
+                  </Edge>
+                  <Edge>
+                    <From>4</From>
+                    <To>5</To>
+                    <Label>Source1</Label>
+                  </Edge>
+                  <Edge>
+                    <From>5</From>
+                    <To>6</To>
+                    <Label>Source2</Label>
+                  </Edge>
+                  <Edge>
+                    <From>6</From>
+                    <To>3</To>
+                    <Label>Source1</Label>
+                  </Edge>
+                </Edges>
+              </Workflow>
+            </Expression>
+            <Expression xsi:type="NestedWorkflow">
+              <Name>Left/right: zoom</Name>
+              <Workflow>
+                <Nodes>
+                  <Expression xsi:type="Scan">
+                    <Workflow>
+                      <Nodes>
+                        <Expression xsi:type="MemberSelector">
+                          <Selector>Source.Accumulation</Selector>
+                        </Expression>
+                        <Expression xsi:type="WorkflowInput">
+                          <Name>Source1</Name>
+                        </Expression>
+                        <Expression xsi:type="MemberSelector">
+                          <Selector>Source.Value</Selector>
+                        </Expression>
+                        <Expression xsi:type="Combinator">
+                          <Combinator xsi:type="Zip" />
+                        </Expression>
+                        <Expression xsi:type="Add" />
+                        <Expression xsi:type="WorkflowOutput" />
+                        <Expression xsi:type="Condition">
+                          <Name>1 or more</Name>
+                          <Workflow>
+                            <Nodes>
+                              <Expression xsi:type="GreaterThanOrEqual">
+                                <Operand xsi:type="FloatProperty">
+                                  <Value>1</Value>
+                                </Operand>
+                              </Expression>
+                              <Expression xsi:type="WorkflowInput">
+                                <Name>Source1</Name>
+                              </Expression>
+                              <Expression xsi:type="WorkflowOutput" />
+                            </Nodes>
+                            <Edges>
+                              <Edge>
+                                <From>0</From>
+                                <To>2</To>
+                                <Label>Source1</Label>
+                              </Edge>
+                              <Edge>
+                                <From>1</From>
+                                <To>0</To>
+                                <Label>Source1</Label>
+                              </Edge>
+                            </Edges>
+                          </Workflow>
+                        </Expression>
+                      </Nodes>
+                      <Edges>
+                        <Edge>
+                          <From>0</From>
+                          <To>3</To>
+                          <Label>Source1</Label>
+                        </Edge>
+                        <Edge>
+                          <From>1</From>
+                          <To>0</To>
+                          <Label>Source1</Label>
+                        </Edge>
+                        <Edge>
+                          <From>1</From>
+                          <To>2</To>
+                          <Label>Source1</Label>
+                        </Edge>
+                        <Edge>
+                          <From>2</From>
+                          <To>3</To>
+                          <Label>Source2</Label>
+                        </Edge>
+                        <Edge>
+                          <From>3</From>
+                          <To>4</To>
+                          <Label>Source1</Label>
+                        </Edge>
+                        <Edge>
+                          <From>4</From>
+                          <To>6</To>
+                          <Label>Source1</Label>
+                        </Edge>
+                        <Edge>
+                          <From>6</From>
+                          <To>5</To>
+                          <Label>Source1</Label>
+                        </Edge>
+                      </Edges>
+                    </Workflow>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="Merge" />
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="FloatProperty">
+                      <Value>0.1</Value>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="FloatProperty">
+                      <Value>-0.1</Value>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="Take">
+                      <Count>1</Count>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="Condition">
+                    <Name>Press Right</Name>
+                    <Workflow>
+                      <Nodes>
+                        <Expression xsi:type="WorkflowInput">
+                          <Name>Source1</Name>
+                        </Expression>
+                        <Expression xsi:type="WorkflowOutput" />
+                        <Expression xsi:type="Equal">
+                          <Operand xsi:type="WorkflowPropertyOfKeys">
+                            <Value>Right</Value>
+                          </Operand>
+                        </Expression>
+                      </Nodes>
+                      <Edges>
+                        <Edge>
+                          <From>0</From>
+                          <To>2</To>
+                          <Label>Source1</Label>
+                        </Edge>
+                        <Edge>
+                          <From>2</From>
+                          <To>1</To>
+                          <Label>Source1</Label>
+                        </Edge>
+                      </Edges>
+                    </Workflow>
+                  </Expression>
+                  <Expression xsi:type="Condition">
+                    <Name>Press Left</Name>
+                    <Workflow>
+                      <Nodes>
+                        <Expression xsi:type="WorkflowInput">
+                          <Name>Source1</Name>
+                        </Expression>
+                        <Expression xsi:type="WorkflowOutput" />
+                        <Expression xsi:type="Equal">
+                          <Operand xsi:type="WorkflowPropertyOfKeys">
+                            <Value>Left</Value>
+                          </Operand>
+                        </Expression>
+                      </Nodes>
+                      <Edges>
+                        <Edge>
+                          <From>0</From>
+                          <To>2</To>
+                          <Label>Source1</Label>
+                        </Edge>
+                        <Edge>
+                          <From>2</From>
+                          <To>1</To>
+                          <Label>Source1</Label>
+                        </Edge>
+                      </Edges>
+                    </Workflow>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="FloatProperty">
+                      <Value>1</Value>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="q8:KeyDown">
+                      <q8:Filter>None</q8:Filter>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="WorkflowOutput" />
+                </Nodes>
+                <Edges>
+                  <Edge>
+                    <From>0</From>
+                    <To>9</To>
+                    <Label>Source1</Label>
+                  </Edge>
+                  <Edge>
+                    <From>1</From>
+                    <To>0</To>
+                    <Label>Source1</Label>
+                  </Edge>
+                  <Edge>
+                    <From>2</From>
+                    <To>1</To>
+                    <Label>Source1</Label>
+                  </Edge>
+                  <Edge>
+                    <From>3</From>
+                    <To>1</To>
+                    <Label>Source2</Label>
+                  </Edge>
+                  <Edge>
+                    <From>4</From>
+                    <To>1</To>
+                    <Label>Source3</Label>
+                  </Edge>
+                  <Edge>
+                    <From>5</From>
+                    <To>2</To>
+                    <Label>Source1</Label>
+                  </Edge>
+                  <Edge>
+                    <From>6</From>
+                    <To>3</To>
+                    <Label>Source1</Label>
+                  </Edge>
+                  <Edge>
+                    <From>7</From>
+                    <To>4</To>
+                    <Label>Source1</Label>
+                  </Edge>
+                  <Edge>
+                    <From>8</From>
+                    <To>5</To>
+                    <Label>Source1</Label>
+                  </Edge>
+                  <Edge>
+                    <From>8</From>
+                    <To>6</To>
                     <Label>Source1</Label>
                   </Edge>
                 </Edges>
@@ -1013,6 +1290,11 @@ def process(value):
               <To>12</To>
               <Label>Source4</Label>
             </Edge>
+            <Edge>
+              <From>27</From>
+              <To>12</To>
+              <Label>Source5</Label>
+            </Edge>
           </Edges>
         </Workflow>
       </Expression>
@@ -1049,7 +1331,8 @@ def process(value):
     <Type>Bonsai.Shaders.UpdateTexture, Bonsai.Shaders, Version=0.14.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Shaders.WindowClosed, Bonsai.Shaders, Version=0.14.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.TakeUntil, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.PointGrey.FlyCapture, Bonsai.PointGrey, Version=2.2.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Video.VideoCaptureDevice, Bonsai.Video, Version=2.2.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Reactive.SampleInterval, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.Merge, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Vision.SaveImage, Bonsai.Vision, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.Zip, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
@@ -1083,5 +1366,9 @@ def process(value):
     <Type>Bonsai.Reactive.Skip, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Dsp.Abs, Bonsai.Dsp, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Expressions.SubtractBuilder, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Expressions.BooleanProperty, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Expressions.GreaterThanOrEqualBuilder, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Expressions.WorkflowProperty`1[[System.Windows.Forms.Keys, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]], Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Windows.Input.KeyDown, Bonsai.Windows.Input, Version=2.2.0.0, Culture=neutral, PublicKeyToken=null</Type>
   </ExtensionTypes>
 </WorkflowBuilder>
