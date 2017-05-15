@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <WorkflowBuilder Version="2.3.0">
-  <Workflow xmlns:q8="clr-namespace:Bonsai.Windows.Input;assembly=Bonsai.Windows.Input" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:q1="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders" xmlns:q2="clr-namespace:Bonsai.Video;assembly=Bonsai.Video" xmlns:q3="clr-namespace:Bonsai.Vision;assembly=Bonsai.Vision" xmlns:q4="clr-namespace:Bonsai.Scripting;assembly=Bonsai.Scripting" xmlns:q5="clr-namespace:Bonsai.Shaders.Input;assembly=Bonsai.Shaders" xmlns:q6="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp" xmlns:q7="clr-namespace:Bonsai.Audio;assembly=Bonsai.Audio" xmlns="https://horizongir.org/bonsai">
+  <Workflow xmlns:q8="clr-namespace:Bonsai.Windows.Input;assembly=Bonsai.Windows.Input" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:q1="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders" xmlns:q2="clr-namespace:Bonsai.PointGrey;assembly=Bonsai.PointGrey" xmlns:q3="clr-namespace:Bonsai.Vision;assembly=Bonsai.Vision" xmlns:q4="clr-namespace:Bonsai.Scripting;assembly=Bonsai.Scripting" xmlns:q5="clr-namespace:Bonsai.Shaders.Input;assembly=Bonsai.Shaders" xmlns:q6="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp" xmlns:q7="clr-namespace:Bonsai.Audio;assembly=Bonsai.Audio" xmlns="https://horizongir.org/bonsai">
     <Nodes>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="q1:UpdateTexture">
@@ -15,23 +15,13 @@
         <Combinator xsi:type="TakeUntil" />
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="q2:VideoCaptureDevice">
+        <Combinator xsi:type="q2:FlyCapture">
           <q2:Index>0</q2:Index>
-          <q2:Format>
-            <q2:FrameSize>
-              <q2:Width>1280</q2:Width>
-              <q2:Height>720</q2:Height>
-            </q2:FrameSize>
-            <q2:AverageFrameRate>29</q2:AverageFrameRate>
-            <q2:MaximumFrameRate>30</q2:MaximumFrameRate>
-            <q2:BitCount>16</q2:BitCount>
-          </q2:Format>
+          <q2:ColorProcessing>Default</q2:ColorProcessing>
         </Combinator>
       </Expression>
-      <Expression xsi:type="Combinator">
-        <Combinator xsi:type="SampleInterval">
-          <Interval>PT0.1S</Interval>
-        </Combinator>
+      <Expression xsi:type="MemberSelector">
+        <Selector>Source.Image</Selector>
       </Expression>
       <Expression xsi:type="NestedWorkflow">
         <Name>Main workflow</Name>
@@ -592,14 +582,14 @@ def process(value):
                         <Expression xsi:type="WorkflowOutput" />
                         <Expression xsi:type="Combinator">
                           <Combinator xsi:type="TakeLast">
-                            <Count>15</Count>
+                            <Count>1</Count>
                           </Combinator>
                         </Expression>
                         <Expression xsi:type="Accumulate" />
                         <Expression xsi:type="ExternalizedPropertyOfInt32TakeLast">
                           <MemberName>Count</MemberName>
                           <Name>Count</Name>
-                          <Value>15</Value>
+                          <Value>1</Value>
                         </Expression>
                         <Expression xsi:type="Combinator">
                           <Combinator xsi:type="Concat" />
@@ -740,10 +730,11 @@ font=Font(2)
 @returns(IplImage)
 def process(value):
   image = value
-  text = "Please wait... filling frame buffer"
+  text = ["Gel Imager 2.0 loading...","Press Esc to quit"]
   output = IplImage(image.Size, image.Depth, 3)
   CV.CvtColor(image, output, ColorConversion.Gray2Bgr)
-  CV.PutText(output,text,Point(15,30),font, textcol)
+  for i, line in enumerate(text):
+    CV.PutText(output,line,Point(15,30+i*30),font, textcol)
   return output
 </q4:Script>
             </Expression>
@@ -1403,11 +1394,10 @@ def process(value):
     </Edges>
   </Workflow>
   <ExtensionTypes>
-    <Type>Bonsai.Shaders.UpdateTexture, Bonsai.Shaders, Version=0.14.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Shaders.WindowClosed, Bonsai.Shaders, Version=0.14.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Shaders.UpdateTexture, Bonsai.Shaders, Version=0.16.1.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Shaders.WindowClosed, Bonsai.Shaders, Version=0.16.1.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.TakeUntil, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Video.VideoCaptureDevice, Bonsai.Video, Version=2.2.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Reactive.SampleInterval, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.PointGrey.FlyCapture, Bonsai.PointGrey, Version=2.2.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.Merge, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Vision.SaveImage, Bonsai.Vision, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Reactive.Zip, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
@@ -1418,7 +1408,7 @@ def process(value):
     <Type>Bonsai.Reactive.Take, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Expressions.EqualBuilder, Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Expressions.WorkflowProperty`1[[OpenTK.Input.Key, OpenTK, Version=1.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4]], Bonsai.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Shaders.Input.KeyDown, Bonsai.Shaders, Version=0.14.0.0, Culture=neutral, PublicKeyToken=null</Type>
+    <Type>Bonsai.Shaders.Input.KeyDown, Bonsai.Shaders, Version=0.16.1.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Dsp.Average, Bonsai.Dsp, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Dsp.Buffer, Bonsai.Dsp, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Scripting.ExpressionTransform, Bonsai.Scripting, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
