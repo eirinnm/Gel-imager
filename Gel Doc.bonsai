@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <WorkflowBuilder Version="2.3.0">
-  <Workflow xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:q1="clr-namespace:Bonsai.PointGrey;assembly=Bonsai.PointGrey" xmlns:q2="clr-namespace:Bonsai.Vision;assembly=Bonsai.Vision" xmlns:q3="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp" xmlns:q4="clr-namespace:Bonsai.Scripting;assembly=Bonsai.Scripting" xmlns:q5="clr-namespace:Bonsai.Audio;assembly=Bonsai.Audio" xmlns:q6="clr-namespace:Bonsai.Windows.Input;assembly=Bonsai.Windows.Input" xmlns="https://horizongir.org/bonsai">
+  <Workflow xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:q1="clr-namespace:Bonsai.PointGrey;assembly=Bonsai.PointGrey" xmlns:q2="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp" xmlns:q3="clr-namespace:Bonsai.Scripting;assembly=Bonsai.Scripting" xmlns:q4="clr-namespace:Bonsai.Vision;assembly=Bonsai.Vision" xmlns:q5="clr-namespace:Bonsai.Audio;assembly=Bonsai.Audio" xmlns:q6="clr-namespace:Bonsai.Windows.Input;assembly=Bonsai.Windows.Input" xmlns="https://horizongir.org/bonsai">
     <Nodes>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="q1:FlyCapture">
@@ -10,16 +10,6 @@
       </Expression>
       <Expression xsi:type="MemberSelector">
         <Selector>Source.Image</Selector>
-      </Expression>
-      <Expression xsi:type="Combinator">
-        <Combinator xsi:type="q2:Crop">
-          <q2:RegionOfInterest>
-            <q2:X>435</q2:X>
-            <q2:Y>435</q2:Y>
-            <q2:Width>1200</q2:Width>
-            <q2:Height>1200</q2:Height>
-          </q2:RegionOfInterest>
-        </Combinator>
       </Expression>
       <Expression xsi:type="NestedWorkflow">
         <Name />
@@ -33,16 +23,16 @@
               <Workflow>
                 <Nodes>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="q3:Average" />
+                    <Combinator xsi:type="q2:Average" />
                   </Expression>
                   <Expression xsi:type="Combinator">
-                    <Combinator xsi:type="q3:Buffer">
-                      <q3:Count>50</q3:Count>
-                      <q3:Skip>1</q3:Skip>
+                    <Combinator xsi:type="q2:Buffer">
+                      <q2:Count>50</q2:Count>
+                      <q2:Skip>1</q2:Skip>
                     </Combinator>
                   </Expression>
-                  <Expression xsi:type="q4:ExpressionTransform">
-                    <q4:Expression>1000/it</q4:Expression>
+                  <Expression xsi:type="q3:ExpressionTransform">
+                    <q3:Expression>1000/it</q3:Expression>
                   </Expression>
                   <Expression xsi:type="MemberSelector">
                     <Selector>Source.Interval.TotalMilliseconds</Selector>
@@ -82,9 +72,9 @@
               </Workflow>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q2:SaveImage">
-                <q2:FileName>C:\Users\Gel imager\Pictures\Camera Roll\Gel image .jpg</q2:FileName>
-                <q2:Suffix>Timestamp</q2:Suffix>
+              <Combinator xsi:type="q4:SaveImage">
+                <q4:FileName>C:\Users\Gel imager\Pictures\Camera Roll\Gel image .jpg</q4:FileName>
+                <q4:Suffix>Timestamp</q4:Suffix>
               </Combinator>
             </Expression>
             <Expression xsi:type="ReplaySubject">
@@ -95,9 +85,9 @@
               <Name>Collect frames</Name>
               <Workflow>
                 <Nodes>
-                  <Expression xsi:type="q4:PythonTransform">
-                    <q4:Name>Draw text</q4:Name>
-                    <q4:Script>import clr
+                  <Expression xsi:type="q3:PythonTransform">
+                    <q3:Name>Draw text</q3:Name>
+                    <q3:Script>import clr
 clr.AddReference("OpenCV.Net")
 from OpenCV.Net import *
 import datetime
@@ -116,7 +106,7 @@ def process(value):
   CV.CvtColor(image, output, ColorConversion.Gray2Bgr)
   CV.PutText(output,text,Point(15,30),font, textcol)
   return output
-</q4:Script>
+</q3:Script>
                   </Expression>
                   <Expression xsi:type="Combinator">
                     <Combinator xsi:type="CombineLatest" />
@@ -143,7 +133,7 @@ def process(value):
                               </Expression>
                               <Expression xsi:type="WorkflowOutput" />
                               <Expression xsi:type="Combinator">
-                                <Combinator xsi:type="q3:Accumulate" />
+                                <Combinator xsi:type="q2:Accumulate" />
                               </Expression>
                               <Expression xsi:type="Combinator">
                                 <Combinator xsi:type="TakeLast">
@@ -180,10 +170,10 @@ def process(value):
                           <Workflow>
                             <Nodes>
                               <Expression xsi:type="Combinator">
-                                <Combinator xsi:type="q3:ConvertScale">
-                                  <q3:Depth xsi:nil="true" />
-                                  <q3:Scale>1</q3:Scale>
-                                  <q3:Shift>0</q3:Shift>
+                                <Combinator xsi:type="q2:ConvertScale">
+                                  <q2:Depth xsi:nil="true" />
+                                  <q2:Scale>1</q2:Scale>
+                                  <q2:Shift>0</q2:Shift>
                                 </Combinator>
                               </Expression>
                               <Expression xsi:type="ExternalizedPropertyOfDoubleConvertScale">
@@ -204,27 +194,27 @@ def process(value):
                                 <Selector>Source.Val0</Selector>
                               </Expression>
                               <Expression xsi:type="Combinator">
-                                <Combinator xsi:type="q3:Average" />
+                                <Combinator xsi:type="q2:Average" />
                               </Expression>
                               <Expression xsi:type="Combinator">
-                                <Combinator xsi:type="q3:Buffer">
-                                  <q3:Count>3</q3:Count>
-                                  <q3:Skip>1</q3:Skip>
+                                <Combinator xsi:type="q2:Buffer">
+                                  <q2:Count>3</q2:Count>
+                                  <q2:Skip>1</q2:Skip>
                                 </Combinator>
                               </Expression>
                               <Expression xsi:type="MemberSelector">
                                 <Selector>Source.MaxLocation.X</Selector>
                               </Expression>
                               <Expression xsi:type="Combinator">
-                                <Combinator xsi:type="q3:Extrema" />
+                                <Combinator xsi:type="q2:Extrema" />
                               </Expression>
                               <Expression xsi:type="Combinator">
-                                <Combinator xsi:type="q3:Histogram1D">
-                                  <q3:Min>0</q3:Min>
-                                  <q3:Max>255</q3:Max>
-                                  <q3:Bins>255</q3:Bins>
-                                  <q3:Normalize>true</q3:Normalize>
-                                  <q3:Accumulate>false</q3:Accumulate>
+                                <Combinator xsi:type="q2:Histogram1D">
+                                  <q2:Min>0</q2:Min>
+                                  <q2:Max>255</q2:Max>
+                                  <q2:Bins>255</q2:Bins>
+                                  <q2:Normalize>true</q2:Normalize>
+                                  <q2:Accumulate>false</q2:Accumulate>
                                 </Combinator>
                               </Expression>
                               <Expression xsi:type="ExternalizedPropertyOfDoubleMultiplyBuilder">
@@ -515,10 +505,10 @@ def process(value):
                           <Combinator xsi:type="Zip" />
                         </Expression>
                         <Expression xsi:type="Add" />
-                        <Expression xsi:type="q4:PythonTransform">
-                          <q4:Script>@returns(int)
+                        <Expression xsi:type="q3:PythonTransform">
+                          <q3:Script>@returns(int)
 def process(value):
-  return 1 if value&lt;=0 else value</q4:Script>
+  return 1 if value&lt;=0 else value</q3:Script>
                         </Expression>
                       </Nodes>
                       <Edges>
@@ -640,20 +630,20 @@ def process(value):
               </Workflow>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="q2:Grayscale" />
+              <Combinator xsi:type="q4:Grayscale" />
             </Expression>
             <Expression xsi:type="WorkflowInput">
               <Name>Source1</Name>
             </Expression>
             <Expression xsi:type="WorkflowOutput" />
-            <Expression xsi:type="q4:PythonTransform">
-              <q4:Script>import subprocess
+            <Expression xsi:type="q3:PythonTransform">
+              <q3:Script>import subprocess
 @returns(bool)
 def process(value):
   subprocess.Popen(['powershell.exe','-ExecutionPolicy', 'Bypass',
                   '-file', 'C:\Users\Gel imager\Documents\Gel-imager\PhotoSender.ps1',
                   '-dir', 'C:\Users\Gel imager\Pictures\Camera Roll'])
-  return True</q4:Script>
+  return True</q3:Script>
             </Expression>
           </Nodes>
           <Edges>
@@ -758,24 +748,18 @@ def process(value):
       </Edge>
       <Edge>
         <From>2</From>
-        <To>3</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>3</From>
-        <To>5</To>
-        <Label>Source1</Label>
-      </Edge>
-      <Edge>
-        <From>5</From>
         <To>4</To>
+        <Label>Source1</Label>
+      </Edge>
+      <Edge>
+        <From>4</From>
+        <To>3</To>
         <Label>Source1</Label>
       </Edge>
     </Edges>
   </Workflow>
   <ExtensionTypes>
     <Type>Bonsai.PointGrey.FlyCapture, Bonsai.PointGrey, Version=2.2.0.0, Culture=neutral, PublicKeyToken=null</Type>
-    <Type>Bonsai.Vision.Crop, Bonsai.Vision, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Dsp.Average, Bonsai.Dsp, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Dsp.Buffer, Bonsai.Dsp, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
     <Type>Bonsai.Scripting.ExpressionTransform, Bonsai.Scripting, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null</Type>
