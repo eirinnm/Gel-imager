@@ -1,8 +1,8 @@
 ﻿param (
     [string]$dir = "C:\Users\Gel imager\Pictures\Camera Roll"
 )
-Write-host $dir
-write-host $PSScriptRoot
+#Write-host $dir
+#write-host $PSScriptRoot
 ## Get the newest image in this folder:
 $img = Get-ChildItem $dir -Filter *.jpg | Sort-Object LastWriteTime -Descending | Select-Object -first 1
 if($img){
